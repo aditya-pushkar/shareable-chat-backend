@@ -99,8 +99,32 @@ def share_chat_to_private(request):
 "chat_id": "fcce88a3-6af1-4636-a9c7-e406e792d4cc"
 }
 """
+
+@api_view(['POST'])
 def add_member_to_private_chat(request):
-    pass
+    try:
+        user = request.user
+        data = request.data
+
+        chat_id = data.get("chat_id")
+        username = data.get("username")
+
+        chat_obj = Chat.objects.get(id=chat_id)
+        if(chat_obj.user!=user):
+            return Response({'message': "You don't have permission to access this data"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            user_obj = User.objects.get(username=username)
+        except ObjectDoesNotExist:
+            return Response({"message": "user not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        chat_obj.is_public = False
+        chat_obj.is_private = True
+        chat_obj.save()
+        chat_obj.members.add(user_obj)
+        return Response({'message': 'member added'}, status=status.HTTP_200_OK)
+    except Exception as error:
+        return Response({"message": "Server error, Please try again later"}, status=status.HTTP_400_BAD_REQUEST)
 
 def read_public_chat(request):
     pass
