@@ -52,9 +52,6 @@ def update_chat(request):
         return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
 
 
-def delete_chat(request):
-    pass
-
 @api_view(['POST'])
 def share_chat_to_public(request):
     try:
@@ -126,11 +123,45 @@ def add_member_to_private_chat(request):
     except Exception as error:
         return Response({"message": "Server error, Please try again later"}, status=status.HTTP_400_BAD_REQUEST)
 
-def read_public_chat(request):
-    pass
+@api_view(['GET'])
+def read_public_chat(request, chat_id):
+    try:
+        try:
+            chat_obj = Chat.objects.get(id=chat_id)
+        except ObjectDoesNotExist:
+            return Response({"message": "Public chat not found."}, status=status.HTTP_404_NOT_FOUND)
 
-def read_private_chat(request):
-    pass
+        if not chat_obj.is_public:
+            return Response({"message": "You don't have permission to access this page."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = ChatSerializer(chat_obj, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as error:
+        return Response({"message": "server error"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def read_private_chat(request, chat_id):
+    try:
+        user = request.user
+
+        try:
+            chat_obj = Chat.objects.get(id=chat_id)
+        except ObjectDoesNotExist:
+            return Response({"message": "Public chat not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not chat_obj.is_private:
+            return Response({"message": "Wrong URL"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            members_obj = chat_obj.members.get(id=user.id)
+        except ObjectDoesNotExist:
+            return Response({"message": "ou don't have permission to access this page."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response({"message": "Access granted."}, status=status.HTTP_200_OK)
+        
+    except Exception as error:
+        return Response({"message": "Server Error", "error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
 # make shared chat reusable for current user //means they can copy the shared chat and make their own
 def fork_chat(request):
