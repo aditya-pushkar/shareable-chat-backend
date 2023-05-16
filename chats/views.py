@@ -55,7 +55,7 @@ def update_chat(request):
 def delete_chat(request):
     pass
 
-@api_view(['PATCH'])
+@api_view(['POST'])
 def share_chat_to_public(request):
     try:
         user = request.user
@@ -67,16 +67,39 @@ def share_chat_to_public(request):
         if(chat_obj.user!=user):
             return Response({'message': "You don't have permission to access this data"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        chat_obj.is_public = True
         chat_obj.is_private = False
+        chat_obj.is_public = True
         chat_obj.save()
         return Response(status=status.HTTP_200_OK)
 
     except Exception as error:
         return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['PATCH'])
+@api_view(['POST'])
 def share_chat_to_private(request):
+    try:
+        user = request.user
+        data = request.data
+
+        chat_id = data.get('chat_id')
+        chat_obj = Chat.objects.get(id=chat_id)
+        if(chat_obj.user!=user):
+            return Response({'message': "You don't have permission to access this data"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        chat_obj.is_private = True
+        chat_obj.is_public = False
+        chat_obj.save()
+        return Response(status=status.HTTP_200_OK)
+
+    except Exception as error:
+        return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
+
+"""
+{
+"chat_id": "fcce88a3-6af1-4636-a9c7-e406e792d4cc"
+}
+"""
+def add_member_to_private_chat(request):
     pass
 
 def read_public_chat(request):
