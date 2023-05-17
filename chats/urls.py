@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import get_chats, create_chat, update_chat, share_chat_to_public, share_chat_to_private, add_member_to_private_chat, read_public_chat, read_private_chat
+from .views import get_chats, create_chat, update_chat, share_chat_to_public, share_chat_to_private, add_member_to_private_chat, read_public_chat, read_private_chat, fork_chat
 
 urlpatterns = [
     path('list/', get_chats),
@@ -11,4 +11,5 @@ urlpatterns = [
     path('add-member/', add_member_to_private_chat),
     path('read-public/<str:chat_id>/', read_public_chat),
     path('read-private/<str:chat_id>/', read_private_chat),
+    path('fork/', fork_chat),
 ]

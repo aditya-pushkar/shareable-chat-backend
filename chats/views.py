@@ -164,7 +164,46 @@ def read_private_chat(request, chat_id):
         return Response({"message": "Server Error", "error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
 # make shared chat reusable for current user //means they can copy the shared chat and make their own
+@api_view(['POST'])
 def fork_chat(request):
-    # if chat private ? make sure the user is included in the members list before forking the chat 
-    pass
+    try:
+        user = request.user
+        chat_id = request.data.get('chat_id')
+
+        try:
+            chat_obj = Chat.objects.get(id=chat_id)
+        except ObjectDoesNotExist:
+            return Response({"message": "Public chat not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # If already folked return HTTP_226_IMUSED.
+        
+        if chat_obj.is_private:
+            try:
+                members_obj = chat_obj.members.get(id=user.id)
+            except ObjectDoesNotExist:
+                return Response({"message": "You don't have permission to fork this chat."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            new_chat_obj = Chat.objects.create(
+                user=user, 
+                title=chat_obj.title,
+                chats=chat_obj.chats,
+                is_forked=True
+            )
+            new_chat_obj.save()
+            return Response({"message": "Chat Forked.", "chat_id": f"{new_chat_obj.id}"}, status=status.HTTP_201_CREATED)
+        
+        if chat_obj.is_public:
+            new_chat_obj = Chat.objects.create(
+            user=user, 
+            title=chat_obj.title,
+            chats=chat_obj.chats,
+            is_forked=True
+            )
+            new_chat_obj.save()
+            return Response({"message": "Chat Forked.", "chat_id": f"{new_chat_obj.id}"}, status=status.HTTP_201_CREATED)
+
+        return Response({"message": "Server Error", "error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as error:
+        return Response({"message": "Server Error", "error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
