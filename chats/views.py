@@ -147,19 +147,22 @@ def read_private_chat(request, chat_id):
 
         try:
             chat_obj = Chat.objects.get(id=chat_id)
+            serializer = ChatSerializer(chat_obj)
         except ObjectDoesNotExist:
             return Response({"message": "Public chat not found."}, status=status.HTTP_404_NOT_FOUND)
         
         if not chat_obj.is_private:
             return Response({"message": "Wrong URL"}, status=status.HTTP_404_NOT_FOUND)
 
+        if chat_obj.user==user:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
         try:
             members_obj = chat_obj.members.get(id=user.id)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
-            return Response({"message": "ou don't have permission to access this page."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "You don't have permission to access this page."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        return Response({"message": "Access granted."}, status=status.HTTP_200_OK)
-        
     except Exception as error:
         return Response({"message": "Server Error", "error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
