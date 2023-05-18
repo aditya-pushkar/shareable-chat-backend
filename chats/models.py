@@ -9,8 +9,6 @@ class Chat(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_DEFAULT, default="deleted user", related_name="chats")
     title = models.CharField(max_length=500, null=True, blank=True)
     chats = models.JSONField(null=True, blank=True)
-    members = models.ManyToManyField(User, related_name="chat_members", blank=True)
-    is_private = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
     is_forked = models.BooleanField(default=False, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

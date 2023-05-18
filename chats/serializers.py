@@ -13,8 +13,7 @@ class UserSerializer(ModelSerializer):
 
 class ChatSerializer(ModelSerializer):
     user = UserSerializer()
-    members = UserSerializer(many=True)
 
     class Meta:
         model = Chat
-        fields = ['id', 'user', 'title', 'chats', 'members', 'is_private', 'is_public', 'is_forked',  'updated_at']
+        fields = ['id', 'user', 'title', 'chats', 'is_public', 'is_forked',  'updated_at']
