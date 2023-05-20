@@ -30,6 +30,20 @@ def get_chats(request):
     except Exception as error:
         return Response({'message': 'something went wrong in server, please try again latter', 'error': f'{error}'}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def chat_detail(request, chat_id):
+    try:
+        user = request.user
+
+        chat_obj = Chat.objects.get(id=chat_id)
+        if(chat_obj.user != user):
+            return Response({"message": "Unauthorized request"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = ChatSerializer(chat_obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as error:
+        return Response({"message": "server error"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def create_chat(request):
